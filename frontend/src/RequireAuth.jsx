@@ -1,0 +1,15 @@
+import React from "react";
+import { Navigate } from "react-router-dom";
+
+export default function RequireAuth({ allowedRoles, children }) {
+  const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
+
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+  if (!allowedRoles.includes(role)) {
+    return <div className="min-h-screen flex items-center justify-center text-red-600 text-xl font-bold">Access Denied</div>;
+  }
+  return children;
+}
