@@ -6,27 +6,34 @@ const path = require('path');
 
 // Register a new user
 exports.registerUser = async (req, res) => {
-    console.log("REGISTER BODY", req.body);
-    // Accept both phone and phoneNumber for compatibility
-    const { fullName, email, password, role, phone, phoneNumber } = req.body;
-    const finalPhone = phone || phoneNumber || null;
     try {
+        const { fullName, email, password, phoneNumber, dateOfBirth, gender, nationalId } = req.body;
+
+        // Check if user already exists
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
-            return res.status(400).json({ message: "Email already in use" });
+            return res.status(400).json({ message: "Email already registered" });
         }
-        // Only pass plain password, let the model hook hash it
+
+        // Create new user
         const user = await User.create({
             fullName,
             email,
-            password, // plain password
-            role: role || "member",
-            phoneNumber: finalPhone
+            password,
+            phoneNumber,
+            dateOfBirth,
+            gender,
+            nationalId,
+            role: 'member' // Default role
         });
-        res.status(201).json({ message: "User registered successfully" });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Server error" });
+
+        res.status(201).json({ message: "Registration successful" });
+    } catch (error) {
+        console.error('Registration error:', error);
+        if (error.name === 'SequelizeValidationError') {
+            return res.status(400).json({ message: error.errors[0].message });
+        }
+        res.status(500).json({ message: "Registration failed" });
     }
 };
 
@@ -86,4 +93,19 @@ exports.updateProfile = async (req, res) => {
         console.error(err);
         res.status(500).json({ message: "Server error" });
     }
+};
+
+// Add this new function to get all users
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await User.findAll({
+      attributes: ['id', 'fullName', 'email', 'phoneNumber', 'dateOfBirth', 'gender', 'nationalId'],
+      order: [['createdAt', 'DESC']]
+    });
+
+    res.json(users);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ message: 'Failed to fetch users' });
+  }
 };

@@ -1,17 +1,19 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
+const User = require('./user.model');
 
 const Loan = sequelize.define('Loan', {
   id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
-    primaryKey: true
+    primaryKey: true,
+    allowNull: false
   },
-  userId: {
+  user_id: {
     type: DataTypes.UUID,
     allowNull: false,
     references: {
-      model: 'Users',
+      model: User,
       key: 'id'
     }
   },
@@ -23,53 +25,76 @@ const Loan = sequelize.define('Loan', {
     type: DataTypes.INTEGER, // in months
     allowNull: false
   },
-  interestRate: {
+  interest_rate: {
     type: DataTypes.DECIMAL(5, 2),
     allowNull: false
   },
   status: {
-    type: DataTypes.ENUM('pending', 'approved', 'rejected', 'disbursed', 'completed', 'defaulted'),
+    type: DataTypes.ENUM('pending', 'approved', 'active', 'rejected', 'completed', 'defaulted'),
     defaultValue: 'pending'
   },
   purpose: {
     type: DataTypes.STRING,
     allowNull: false
   },
-  approvedBy: {
+  approved_by: {
     type: DataTypes.UUID,
     references: {
-      model: 'Users',
+      model: User,
       key: 'id'
     }
   },
-  approvedAt: {
+  approved_at: {
     type: DataTypes.DATE
   },
-  disbursedAt: {
+  disbursed_at: {
     type: DataTypes.DATE
   },
-  dueDate: {
+  due_date: {
     type: DataTypes.DATE
   },
-  mlScore: {
+  ml_score: {
     type: DataTypes.FLOAT,
     comment: 'ML model prediction score for loan repayment probability'
   },
-  totalRepaymentAmount: {
+  total_repayment_amount: {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false
   },
-  remainingBalance: {
+  remaining_balance: {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false
   },
-  nextPaymentDue: {
+  next_payment_due: {
     type: DataTypes.DATE
   },
-  bankStatementUrl: {
+  bank_statement_url: {
     type: DataTypes.STRING,
     comment: 'URL to uploaded bank statement for ML analysis'
+  },
+  officer_note: {
+    type: DataTypes.TEXT,
+    allowNull: true
   }
+}, {
+  tableName: 'loans',
+  underscored: true
+});
+
+// Define associations
+Loan.belongsTo(User, {
+  foreignKey: 'user_id',
+  as: 'user'
+});
+
+Loan.belongsTo(User, {
+  foreignKey: 'approved_by',
+  as: 'approvedByUser'
+});
+
+User.hasMany(Loan, {
+  foreignKey: 'user_id',
+  as: 'loans'
 });
 
 module.exports = Loan;

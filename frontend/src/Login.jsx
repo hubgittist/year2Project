@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "./context/AuthContext";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,9 +20,10 @@ export default function Login() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Login failed");
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("role", data.role);
-      navigate("/");
+      
+      // Use the AuthContext login function to store user data
+      login(data.token, data.user);
+      navigate("/dashboard");
     } catch (err) {
       setError(err.message);
     }
@@ -49,7 +52,7 @@ export default function Login() {
         />
         <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded w-full" type="submit">Login</button>
         <div className="mt-4 text-sm text-gray-600 text-center">
-          Don't have an account? <a href="/register" className="text-blue-700 underline">Register</a>
+          Don't have an account? <a href="/register" className="text-blue-600 hover:text-blue-700">Register</a>
         </div>
       </form>
     </div>

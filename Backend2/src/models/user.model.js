@@ -6,7 +6,8 @@ const User = sequelize.define('User', {
   id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
-    primaryKey: true
+    primaryKey: true,
+    allowNull: false
   },
   fullName: {
     type: DataTypes.STRING,
@@ -24,6 +25,10 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: false
   },
+  phoneNumber: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
   role: {
     type: DataTypes.ENUM('member', 'loan_officer', 'admin', 'accountant'),
     defaultValue: 'member'
@@ -32,18 +37,65 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     unique: true
   },
-  phoneNumber: {
-    type: DataTypes.STRING
-  },
   status: {
     type: DataTypes.ENUM('active', 'inactive', 'suspended'),
     defaultValue: 'active'
   },
   lastLogin: {
     type: DataTypes.DATE
+  },
+  dateOfBirth: {
+    type: DataTypes.DATEONLY,
+    allowNull: true, 
+    validate: {
+      isBeforeToday(value) {
+        if (!value) return; 
+        if (value >= new Date()) {
+          throw new Error('Date of birth must be in the past');
+        }
+        const today = new Date();
+        const birthDate = new Date(value);
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+        if (age < 18) {
+          throw new Error('Must be at least 18 years old');
+        }
+      }
+    }
+  },
+  gender: {
+    type: DataTypes.ENUM('male', 'female', 'other'),
+    allowNull: true 
+  },
+  nationalId: {
+    type: DataTypes.STRING,
+    allowNull: true, 
+    unique: true,
+    validate: {
+      isNumeric: true,
+      len: [7, 8] 
+    }
   }
 }, {
+  tableName: 'users',
+  underscored: true,
   hooks: {
+    beforeValidate: (user) => {
+      if (user.isNewRecord) {
+        if (!user.dateOfBirth) {
+          throw new Error('Date of birth is required');
+        }
+        if (!user.gender) {
+          throw new Error('Gender is required');
+        }
+        if (!user.nationalId) {
+          throw new Error('National ID is required');
+        }
+      }
+    },
     beforeCreate: async (user) => {
       if (user.password) {
         user.password = await bcrypt.hash(user.password, 10);

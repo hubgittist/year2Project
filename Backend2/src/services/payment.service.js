@@ -1,49 +1,49 @@
-// const Mpesa = require('mpesa-api').Mpesa;
-// const africastalking = require('africastalking');
+const Mpesa = require('mpesa-api').Mpesa;
+const africastalking = require('africastalking');
 
-// class PaymentService {
-//   constructor() {
-//     this.mpesa = new Mpesa({
-//       consumerKey: process.env.MPESA_CONSUMER_KEY,
-//       consumerSecret: process.env.MPESA_CONSUMER_SECRET,
-//       environment: process.env.NODE_ENV === 'production' ? 'production' : 'sandbox',
-//       shortCode: process.env.MPESA_SHORTCODE,
-//       initiatorPassword: process.env.MPESA_INITIATOR_PASSWORD,
-//       securityCredential: process.env.MPESA_SECURITY_CREDENTIAL,
-//       certificatePath: null
-//     });
+class PaymentService {
+  constructor() {
+    this.mpesa = new Mpesa({
+      consumerKey: process.env.MPESA_CONSUMER_KEY,
+      consumerSecret: process.env.MPESA_CONSUMER_SECRET,
+      environment: process.env.NODE_ENV === 'production' ? 'production' : 'sandbox',
+      shortCode: process.env.MPESA_SHORTCODE,
+      initiatorPassword: process.env.MPESA_INITIATOR_PASSWORD,
+      securityCredential: process.env.MPESA_SECURITY_CREDENTIAL,
+      certificatePath: null
+    });
 
-//     this.at = africastalking({
-//       apiKey: process.env.AT_API_KEY,
-//       username: process.env.AT_USERNAME
-//     });
-//   }
+    this.at = africastalking({
+      apiKey: process.env.AFRICASTALKING_API_KEY,
+      username: process.env.AAFRICASTALKING_USERNAME
+    });
+  }
 
-//   async initiateMpesaPayment(phoneNumber, amount, accountReference) {
-//     try {
-//       const timestamp = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, -3);
-//       const response = await this.mpesa.lipaNaMpesaOnline({
-//         BusinessShortCode: process.env.MPESA_SHORTCODE,
-//         Password: Buffer.from(`${process.env.MPESA_SHORTCODE}${process.env.MPESA_PASSKEY}${timestamp}`).toString('base64'),
-//         Timestamp: timestamp,
-//         Amount: amount,
-//         PartyA: phoneNumber,
-//         PartyB: process.env.MPESA_SHORTCODE,
-//         PhoneNumber: phoneNumber,
-//         CallBackURL: `${process.env.BASE_URL}/api/payments/mpesa/callback`,
-//         AccountReference: accountReference,
-//         TransactionDesc: 'SACCO Payment'
-//       });
+  async initiateMpesaPayment(phoneNumber, amount, accountReference) {
+    try {
+      const timestamp = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, -3);
+      const response = await this.mpesa.lipaNaMpesaOnline({
+        BusinessShortCode: process.env.MPESA_SHORTCODE,
+        Password: Buffer.from(`${process.env.MPESA_SHORTCODE}${process.env.MPESA_PASSKEY}${timestamp}`).toString('base64'),
+        Timestamp: timestamp,
+        Amount: amount,
+        PartyA: phoneNumber,
+        PartyB: process.env.MPESA_SHORTCODE,
+        PhoneNumber: phoneNumber,
+        CallBackURL: `${process.env.BASE_URL}/api/payments/mpesa/callback`,
+        AccountReference: accountReference,
+        TransactionDesc: 'SACCO Payment'
+      });
 
-//       return {
-//         success: true,
-//         checkoutRequestId: response.CheckoutRequestID,
-//         merchantRequestId: response.MerchantRequestID
-//       };
-//     } catch (error) {
-//       throw new Error(`M-Pesa payment initiation failed: ${error.message}`);
-//     }
-//   }
+      return {
+        success: true,
+        checkoutRequestId: response.CheckoutRequestID,
+        merchantRequestId: response.MerchantRequestID
+      };
+    } catch (error) {
+      throw new Error(`M-Pesa payment initiation failed: ${error.message}`);
+    }
+  }
 
 //   async processBankTransfer(bankCode, accountNumber, amount, reference) {
 //     // This is a placeholder for bank transfer processing
@@ -80,21 +80,21 @@
 //     throw new Error('KCB Bank integration not implemented');
 //   }
 
-//   async sendPaymentNotification(phoneNumber, message) {
-//     try {
-//       const result = await this.at.SMS.send({
-//         to: phoneNumber,
-//         message: message
-//       });
+  async sendPaymentNotification(phoneNumber, message) {
+    try {
+      const result = await this.at.SMS.send({
+        to: phoneNumber,
+        message: message
+      });
 
-//       return {
-//         success: true,
-//         messageId: result.SMSMessageData.Recipients[0].messageId
-//       };
-//     } catch (error) {
-//       throw new Error(`SMS notification failed: ${error.message}`);
-//     }
-//   }
-// }
+      return {
+        success: true,
+        messageId: result.SMSMessageData.Recipients[0].messageId
+      };
+    } catch (error) {
+      throw new Error(`SMS notification failed: ${error.message}`);
+    }
+  }
+}
 
-// module.exports = new PaymentService();
+module.exports = new PaymentService();

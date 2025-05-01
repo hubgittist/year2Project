@@ -44,8 +44,8 @@ exports.applyLoan = async (req, res) => {
     if (employment !== 'salaried') return res.status(400).json({ message: 'Only salaried members can apply.' });
     if (Number(income) < 15000) return res.status(400).json({ message: 'Monthly income must be at least Ksh 15,000.' });
     const depositTotal = await getDepositTotal(user.id);
-    if (depositTotal < 15000) return res.status(400).json({ message: 'You must have at least Ksh 15,000 in deposits.' });
-    if (Number(amount) > depositTotal * 5) return res.status(400).json({ message: `You can only borrow up to 5x your deposit (Max: Ksh ${depositTotal*5}).` });
+    // if (depositTotal < 15000) return res.status(400).json({ message: 'You must have at least Ksh 15,000 in deposits.' });
+    // if (Number(amount) > depositTotal * 5) return res.status(400).json({ message: `You can only borrow up to 5x your deposit (Max: Ksh ${depositTotal*5}).` });
     if (!amount || Number(amount) <= 0) return res.status(400).json({ message: 'Enter a valid loan amount.' });
     if (!purpose) return res.status(400).json({ message: 'Enter the loan purpose.' });
     // Save loan application
